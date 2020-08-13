@@ -1,3 +1,4 @@
+const fetch = require('node-fetch')
 
 export default {
   /*
@@ -50,11 +51,16 @@ export default {
   ** Nuxt.js modules
   */
   modules: [
+    '@nuxt/http'
   ],
-  /*
-  ** Build configuration
-  ** See https://nuxtjs.org/api/configuration-build/
-  */
+  generate: {
+    async routes () {
+      const posts = await fetch('https://jsonplaceholder.typicode.com/posts').then(res => res.json()).then(d => d.slice(0, 20))
+      const routes = posts.map(post => `/posts/${post.id}`)
+
+      return ['/'].concat(routes)
+    }
+  },
   build: {
   }
 }

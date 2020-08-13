@@ -1,29 +1,38 @@
 <template>
-  <div class="posts">
-    <main>
-      <h2>Posts</h2>
-      <!-- here we loop through the posts -->
-      <div class="post" v-for="post in posts" :key="post.id">
-        <h3>
-          <!-- for each one of them, we’ll render their title, and link off to their individual page -->
-          <a :href="`blog/${post.slug}`">{{ post.title.rendered }}</a>
-        </h3>
-        <div v-html="post.excerpt.rendered"></div>
-        <a :href="`blog/${post.slug}`" class="readmore">Read more ⟶</a>
-      </div>
-    </main>
+  <div>
+    <h1>Blog posts</h1>
+    <template v-if="$fetchState.pending">
+      <content-placeholders>
+        <content-placeholders-text :lines="20" />
+      </content-placeholders>
+    </template>
+    <template v-else-if="$fetchState.error">
+      <p>
+        Error while fetching posts: {{ error }}
+      </p>
+    </template>
+    <template v-else>
+      <ul>
+        <li v-for="post of posts" :key="post.id">
+          <n-link :to="`/posts/${post.id}`">
+            {{ post.title.rendered }}
+          </n-link>
+        </li>
+      </ul>
+    </template>
   </div>
 </template>
 
 <script>
 export default {
-  computed: {
-    posts() {
-      return this.$store.state.posts;
-    },
+  async fetch () {
+    this.posts = await this.$http.$get('https://workshop.hertta.ee//wp-json/wp/v2/posts')
+      .then(posts => posts.slice(0, 20))
   },
-  created() {
-    this.$store.dispatch("getPosts");
-  },
-};
+  data () {
+    return {
+      posts: null
+    }
+  }
+}
 </script>
